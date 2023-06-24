@@ -1,6 +1,11 @@
 #!/bin/bash
 set -ex
 
+# Usage: ./test-all.sh [<additional_cmake_args>...]
+# Examples:
+#     ./test-all.sh
+#     ./test-all.sh -DSTATIC_LINK=1
+
 
 test-one-build () {
     CFG="$1"

@@ -62,6 +62,13 @@ Dependencies:
   disabled on older versions of MSVC, enabled in other cases. For unit tests
   only.
 
+- `STATIC_LINK` (boolean, `0|1`): statically link all the dependencies. By
+  default enalbed on MSVC, disabled in other cases.
+  - On Linux, you need to install the static version of the libraries (e.g.
+    `glibc-static`, `libstdc++-static`).
+  - Cannot specify `-static` with `-fsanitize=address` on gcc. So `-fsanitize=
+    address` won't be used when this option is enabled.
+
 ## Examples
 
 ### Linux

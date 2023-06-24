@@ -8,24 +8,37 @@ include(CTest)
 
 set(CMAKE_CXX_STANDARD 14) 
 
-if (${MSVC})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4100")
-    # Use statically-linked runtime library
-    set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
-    set(ASAN_COMPILE_FLAGS "/fsanitize=address")
-    set(ASAN_LINK_FLAGS "")
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-maybe-uninitialized")
-    set(ASAN_COMPILE_FLAGS "-fsanitize=address;-fsanitize=undefined;-fno-omit-frame-pointer")
-    set(ASAN_LINK_FLAGS "-fsanitize=address;-fsanitize=undefined")
-endif()
-
 
 
 set(TCLAP_INCLUDE_DIR ""
     CACHE PATH "Include directory of TCLAP (absolute path)")
 set(ENABLE_ASAN $<OR:$<NOT:$<BOOL:${MSVC}>>,$<VERSION_GREATER:${MSVC_VERSION},1928>>
     CACHE BOOL "Enable address sanitizer for tests")
+set(STATIC_LINK ${MSVC}
+    CACHE BOOL "Statically link all the dependencies")
+
+
+
+if (${MSVC})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4100")
+    if (${STATIC_LINK})
+        # Use statically-linked runtime library
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
+    endif()
+    set(ASAN_COMPILE_FLAGS "/fsanitize=address")
+    set(ASAN_LINK_FLAGS "")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-maybe-uninitialized")
+    if (${STATIC_LINK})
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    else()
+        # Cannot specify `-static` with `-fsanitize=address`
+        set(ASAN_COMPILE_FLAGS "-fsanitize=address")
+        set(ASAN_LINK_FLAGS "-fsanitize=address")
+    endif()
+    set(ASAN_COMPILE_FLAGS "${ASAN_COMPILE_FLAGS};-fsanitize=undefined;-fno-omit-frame-pointer")
+    set(ASAN_LINK_FLAGS "${ASAN_LINK_FLAGS};-fsanitize=undefined")
+endif()
 
 
 
